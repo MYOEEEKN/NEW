@@ -38,9 +38,12 @@ async function fetchRealHistoryFromAPI() {
         console.log("Fetching data from REAL API...");
         const response = await fetch("https://api.bdg88zf.com/api/webapi/GetNoaverageEmerdList", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+              "Content-Type": "application/json",
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36"
+          },
           body: JSON.stringify({
-            pageSize: 10, // Fetching more history for better analysis
+            pageSize: 10, // Updated to 10 as requested
             pageNo: 1,
             typeId: 1,
             language: 0,
@@ -49,6 +52,14 @@ async function fetchRealHistoryFromAPI() {
             timestamp: Math.floor(Date.now() / 1000)
           })
         });
+        
+        // Check if the response is JSON before parsing
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            const textResponse = await response.text();
+            console.error("API did not return JSON. Response:", textResponse);
+            throw new Error("Invalid response from API. Expected JSON.");
+        }
 
         const data = await response.json();
         
