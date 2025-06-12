@@ -32,43 +32,50 @@ let sharedStats = {
 
 
 // --- IMPORTANT ---
-// This is the function you need to edit.
-// It should call your API to get the most recent game history.
+// This function now contains the API logic from your file.
 async function fetchRealHistoryFromAPI() {
-    //
-    // REPLACE THIS with a call to your actual API endpoint.
-    // For example:
-    // const apiUrl = 'https://your-game-api.com/getHistory?limit=200';
-    // const response = await fetch(apiUrl);
-    // const realHistory = await response.json();
-    //
-    // The data you get back MUST be an array of objects, with the most recent result at the top (index 0).
-    // Each object must have at least these properties:
-    // {
-    //   "period": "20240613123",  // The actual period ID as a string
-    //   "actual": "7",             // The actual winning number as a string
-    //   "status": "Win" or "Loss"  // The outcome status for the prediction
-    // }
-    //
-    
-    // For now, I am returning realistic-looking MOCK data for demonstration.
-    // You MUST replace this mock data with your actual API call.
-    console.log("Fetching data from REAL API (placeholder)...");
-    
-    // Generate some mock history data that looks real
-    let mockHistory = [];
-    let currentPeriod = 20240613300;
-    for(let i=0; i<200; i++){
-        const actualNumber = String(Math.floor(Math.random() * 10));
-        mockHistory.push({
-            period: String(currentPeriod - i),
-            actual: actualNumber,
-            actualNumber: actualNumber, // The logic uses this property
-            status: Math.random() > 0.5 ? "Win" : "Loss"
+    try {
+        console.log("Fetching data from REAL API...");
+        const response = await fetch("https://api.bdg88zf.com/api/webapi/GetNoaverageEmerdList", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pageSize: 10, // Fetching more history for better analysis
+            pageNo: 1,
+            typeId: 1,
+            language: 0,
+            random: "4a0522c6ecd8410496260e686be2a57c",
+            signature: "334B5E70A0C9B8918B0B15E517E2069C",
+            timestamp: Math.floor(Date.now() / 1000)
+          })
         });
-    }
 
-    return mockHistory;
+        const data = await response.json();
+        
+        // The API response is nested under `data.list`.
+        const apiHistory = data?.data?.list || [];
+
+        // --- Data Transformation ---
+        // We need to transform the API data into the format our prediction logic expects.
+        // The logic needs: { period, actual, actualNumber, status }
+        const formattedHistory = apiHistory.map(item => {
+            const actualNumber = String(item.number);
+            return {
+                period: String(item.issueNumber),
+                actual: actualNumber,
+                actualNumber: actualNumber, // The logic uses this property
+                // We'll simulate a status for now, as the API doesn't provide it.
+                status: Math.random() > 0.5 ? "Win" : "Loss" 
+            };
+        });
+
+        return formattedHistory;
+
+    } catch (error) {
+        console.error("Error fetching real history:", error);
+        // Return an empty array if the API call fails
+        return [];
+    }
 }
 
 
